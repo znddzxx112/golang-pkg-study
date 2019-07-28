@@ -1,9 +1,9 @@
 package main
 
-import "fmt"
+import "gitlab.znddzxx112.com/znddzxx112/fortest/sample/api"
 
 func main() {
-	fmt.Println("hello fortest");
+	api.Process()
 }
 
 

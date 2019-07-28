@@ -10,12 +10,12 @@ docker run -d --net=host --name fortest_con fortest:latest
 ```
 
 ### dev or debug:
-- build and run:
+- run server:
 ```
 docker run -it --net=host --name fortest_debug --rm -v ~/gopath:/gopath -v ~/workspace/znddzxx112/fortest:/workspace centos7_golang:1.12.1 /go/bin/go run /workspace/fortest.go
 ```
 
-### go test
+- build tcp client:
 ```
-docker run -it --net=host --name fortest_debug --rm -v ~/gopath:/gopath -v ~/workspace/znddzxx112/fortest:/workspace centos7_golang:1.12.1 /go/bin/go test /workspace/net/http/serve_test.go
+docker run -it --net=host --name fortest_debug --rm -v ~/gopath:/gopath -v ~/workspace/znddzxx112/fortest:/workspace centos7_golang:1.12.1 /go/bin/go build /workspace/tcpcli.go
 ```
