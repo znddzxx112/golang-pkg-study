@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+// https://blog.csdn.net/u011518120/article/details/54604615
+// protoc --go_out=. cmd.proto
+package http2proto;
+
+message cmd {
+    string name = 1;
+    bytes argInfo = 2;
+    bytes resInfo = 3;
+}
