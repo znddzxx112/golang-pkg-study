@@ -1,4 +1,4 @@
-package main
+package runtime
 
 import (
 	"flag"
@@ -6,17 +6,22 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	_ "net/http/pprof"
 	"os"
-	"runtime"
 	"runtime/pprof"
 	"sync"
+	"testing"
 	"time"
 )
 
-// yum install
-// go get -u github.com/google/pprof
-// pprof -http=:8080 http://127.0.0.1:6061/debug/pprof/profile  Or go tool pprof http://127.0.0.1:6061/debug/pprof/profile
+func TestProfiles(t *testing.T) {
+	profiles := pprof.Profiles()
+	for _, profile := range profiles {
+		t.Log(profile.Name())
+	}
+
+	profile := pprof.Lookup("heap")
+	t.Log(profile.Name())
+}
 
 func counter() {
 	list := []int{1}
@@ -57,19 +62,17 @@ func httpGet() int {
 var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to `file`")
 var memprofile = flag.String("memprofile", "", "write memory profile to `file`")
 
-func main() {
-	flag.Parse()
-	if *cpuprofile != "" {
-		f, err := os.Create(*cpuprofile)
-		if err != nil {
-			log.Fatal("could not create CPU profile: ", err)
-		}
-		defer f.Close()
-		if err := pprof.StartCPUProfile(f); err != nil {
-			log.Fatal("could not start CPU profile: ", err)
-		}
-		defer pprof.StopCPUProfile()
+func TestCpuAndMemProfile(t *testing.T) {
+
+	f, err := os.Create("cpuprofile")
+	if err != nil {
+		log.Fatal("could not create CPU profile: ", err)
 	}
+	defer f.Close()
+	if err := pprof.StartCPUProfile(f); err != nil {
+		log.Fatal("could not start CPU profile: ", err)
+	}
+	defer pprof.StopCPUProfile()
 
 	var wg sync.WaitGroup
 	wg.Add(10)
@@ -80,15 +83,4 @@ func main() {
 	wg.Wait()
 	time.Sleep(3 * time.Second)
 
-	if *memprofile != "" {
-		f, err := os.Create(*memprofile)
-		if err != nil {
-			log.Fatal("could not create memory profile: ", err)
-		}
-		defer f.Close()
-		runtime.GC() // get up-to-date statistics
-		if err := pprof.WriteHeapProfile(f); err != nil {
-			log.Fatal("could not write memory profile: ", err)
-		}
-	}
 }

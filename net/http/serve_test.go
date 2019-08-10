@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	_ "net/http/pprof"
 	"testing"
 	"time"
 )
@@ -55,6 +56,9 @@ func GetHelloServer(w http.ResponseWriter, req *http.Request) {
 
 // get cookie
 func TestServerGet(t *testing.T) {
+	go func() {
+		log.Println(http.ListenAndServe("localhost:6061", nil))
+	}()
 	http.HandleFunc("/gethello", GetHelloServer)
 
 	ln, lerr := net.Listen("tcp", ":8889")
@@ -68,7 +72,6 @@ func TestServerGet(t *testing.T) {
 	}
 }
 
-
 func PostHelloServer(w http.ResponseWriter, req *http.Request) {
 
 	if req.ParseForm() == nil {
@@ -78,7 +81,7 @@ func PostHelloServer(w http.ResponseWriter, req *http.Request) {
 }
 
 // post
-func TestServerPost(t *testing.T)  {
+func TestServerPost(t *testing.T) {
 	http.HandleFunc("/posthello", PostHelloServer)
 
 	ln, lerr := net.Listen("tcp", ":8890")
@@ -102,13 +105,11 @@ func PostJsonHelloServer(w http.ResponseWriter, req *http.Request) {
 	io.ReadFull(req.Body, buf)
 	hellojson := &Hellojson{}
 	var UnmarshalErr error
-	if UnmarshalErr = json.Unmarshal(buf, hellojson);UnmarshalErr != nil {
+	if UnmarshalErr = json.Unmarshal(buf, hellojson); UnmarshalErr != nil {
 		io.WriteString(w, "error")
 		return
 	}
 	io.WriteString(w, hellojson.Name)
-
-
 
 }
 
@@ -126,7 +127,7 @@ func TestServerPostJson(t *testing.T) {
 	}
 }
 
-func TestNewServer(t *testing.T)  {
+func TestNewServer(t *testing.T) {
 	handle := http.NewServeMux()
 	handle.HandleFunc("/hello/", func(writer http.ResponseWriter, request *http.Request) {
 		err := request.ParseForm()
