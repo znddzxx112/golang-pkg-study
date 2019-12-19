@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"crypto/tls"
 	"github.com/golang/protobuf/proto"
-	"gitlab.znddzxx112.com/znddzxx112/fortest/net/http/http2proto"
+	"github.com/znddzxx112/golang-pkg-study/net/http/http2proto"
 	"golang.org/x/net/http2"
 	"io"
 	"net/http"
@@ -15,7 +15,7 @@ import (
 
 // openssl req -new -x509 -key default.key -out default.pem -days 3650
 
-func TestServer(t *testing.T)  {
+func TestServer(t *testing.T) {
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
@@ -23,29 +23,29 @@ func TestServer(t *testing.T)  {
 		io.WriteString(w, "http2")
 	})
 	server := &http.Server{
-		Addr:":8899",
-		Handler:mux,
+		Addr:    ":8899",
+		Handler: mux,
 	}
-	if ListenAndServeTLSErr := server.ListenAndServeTLS("./default.pem", "./default.key");ListenAndServeTLSErr != nil {
+	if ListenAndServeTLSErr := server.ListenAndServeTLS("./default.pem", "./default.key"); ListenAndServeTLSErr != nil {
 		t.Fatal(ListenAndServeTLSErr)
 	}
 }
 
-func TestClient(t *testing.T)  {
+func TestClient(t *testing.T) {
 	transport := &http.Transport{
-		TLSClientConfig:&tls.Config{
-			InsecureSkipVerify:true,
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true,
 		},
-		MaxIdleConns:10,
-		MaxConnsPerHost:1,
+		MaxIdleConns:    10,
+		MaxConnsPerHost: 1,
 	}
-	if ConfigureTransportErr := http2.ConfigureTransport(transport);ConfigureTransportErr != nil {
+	if ConfigureTransportErr := http2.ConfigureTransport(transport); ConfigureTransportErr != nil {
 		t.Fatal(ConfigureTransportErr)
 	}
 	client := &http.Client{
-		Transport:transport,
+		Transport: transport,
 	}
-	req,NewRequestErr := http.NewRequest("GET", "https://127.0.0.1:8899/", nil)
+	req, NewRequestErr := http.NewRequest("GET", "https://127.0.0.1:8899/", nil)
 	if NewRequestErr != nil {
 		t.Fatal(NewRequestErr)
 	}
@@ -63,31 +63,31 @@ func TestClient(t *testing.T)  {
 	t.Log(string(buf))
 }
 
-func TestClientProto(t *testing.T){
+func TestClientProto(t *testing.T) {
 	transport := &http.Transport{
-		TLSClientConfig:&tls.Config{
-			InsecureSkipVerify:true,
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true,
 		},
-		MaxIdleConns:10,
-		MaxConnsPerHost:1,
+		MaxIdleConns:    10,
+		MaxConnsPerHost: 1,
 	}
-	if ConfigureTransportErr := http2.ConfigureTransport(transport);ConfigureTransportErr != nil {
+	if ConfigureTransportErr := http2.ConfigureTransport(transport); ConfigureTransportErr != nil {
 		t.Fatal(ConfigureTransportErr)
 	}
 	client := &http.Client{
-		Transport:transport,
+		Transport: transport,
 	}
 
 	cmd := &http2proto.Cmd{
-		Name:"hello",
-		ArgInfo:[]byte("proto"),
+		Name:    "hello",
+		ArgInfo: []byte("proto"),
 	}
-	reqCmdStr,MarshalErr := proto.Marshal(cmd)
+	reqCmdStr, MarshalErr := proto.Marshal(cmd)
 	if MarshalErr != nil {
 		t.Fatal(MarshalErr)
 	}
 
-	req,NewRequestErr := http.NewRequest("POST", "https://127.0.0.1:8899/", bytes.NewReader(reqCmdStr))
+	req, NewRequestErr := http.NewRequest("POST", "https://127.0.0.1:8899/", bytes.NewReader(reqCmdStr))
 	if NewRequestErr != nil {
 		t.Fatal(NewRequestErr)
 	}
@@ -111,15 +111,15 @@ func TestClientProto(t *testing.T){
 	t.Log(string(respCmd.ResInfo))
 }
 
-func TestProtoServer(t *testing.T)  {
+func TestProtoServer(t *testing.T) {
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
 		buf := make([]byte, req.ContentLength)
-		io.ReadFull(req.Body,buf)
+		io.ReadFull(req.Body, buf)
 		defer req.Body.Close()
 
-		reqCmd :=&http2proto.Cmd{}
+		reqCmd := &http2proto.Cmd{}
 		proto.Unmarshal(buf, reqCmd)
 		reqCmd.ResInfo = reqCmd.GetArgInfo()
 
@@ -130,10 +130,10 @@ func TestProtoServer(t *testing.T)  {
 
 	})
 	server := &http.Server{
-		Addr:":8899",
-		Handler:mux,
+		Addr:    ":8899",
+		Handler: mux,
 	}
-	if ListenAndServeTLSErr := server.ListenAndServeTLS("./default.pem", "./default.key");ListenAndServeTLSErr != nil {
+	if ListenAndServeTLSErr := server.ListenAndServeTLS("./default.pem", "./default.key"); ListenAndServeTLSErr != nil {
 		t.Fatal(ListenAndServeTLSErr)
 	}
 }
